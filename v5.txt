@@ -1,0 +1,154 @@
+Quero que você projete e construa a versão definitiva da plataforma ClipFusion, não como um simples gerador de conteúdo, mas como um sistema estruturado de engenharia de atenção com foco em viralização real.
+
+Antes de gerar qualquer código, defina estrategicamente o produto.
+
+POSICIONAMENTO
+ClipFusion é uma máquina de viralização orientada por arquétipos emocionais.
+Não cria apenas roteiros.
+Projeta retenção, impacto e crescimento de marca.
+
+Promessa central: transformar ideias comuns em estruturas narrativas com alto potencial de retenção nos primeiros 3 segundos e forte engajamento até o CTA.
+
+PÚBLICO-ALVO
+
+Eu principalmente a principio.
+Depois:
+Infoprodutores e especialistas que querem autoridade digital.
+Social medias e freelancers que precisam escalar produção estratégica.
+
+Problema central: criadores falham porque não entendem engenharia de retenção, ganchos e estrutura emocional.
+Solução: sistema que organiza narrativa, hook, retenção e CTA de forma estruturada.
+
+ESTRUTURA OBRIGATÓRIA DE VIRALIZAÇÃO
+O sistema deve gerar automaticamente:
+
+Hook forte para os primeiros 3 segundos
+
+Quebra de padrão
+
+Arquétipo emocional dominante
+
+Gatilho psicológico
+
+Estrutura de retenção progressiva
+
+CTA estratégico final
+
+Criar biblioteca de hooks por nicho e plataforma (TikTok, Instagram Reels, YouTube Shorts).
+
+MODELO HUMANO-NO-LOOP
+A IA estrutura.
+O humano pegara um script formulado e levara a uma IA, que respondera para que ele retorne com a tratativa.
+
+Fluxo:
+
+Usuário insere ideia ou tema.
+
+Sistema gera estratégia emocional + roteiro estruturado + prompts.
+
+Usuário produz mídia manualmente.(levar o script pra claude.ia
+
+Sistema monitora pasta de entrada.
+
+Sistema valida arquivos.
+
+Sistema renderiza automaticamente vídeo final.
+
+RESTRIÇÕES TÉCNICAS REAIS
+Hardware disponível:
+
+i5 dual-core
+
+8GB RAM
+
+3GB ZRAM
+
+Debian otimizado (i3wm, serviços mínimos)
+
+Sem GPU
+
+O sistema deve:
+
+Rodar estável nesse ambiente
+
+Usar Ollama com modelo 3B ou menor
+
+Usar Whisper tiny ou base
+
+Executar apenas 1 processo pesado por vez
+
+Não ultrapassar 6GB RAM sob carga
+
+Se houver conflito entre potência e estabilidade, priorizar estabilidade.
+
+ARQUITETURA
+Usar:
+
+Python 3.11
+
+FastAPI leve
+
+SQLite
+
+FFmpeg nativo
+
+Evitar:
+
+Kubernetes
+
+Redis
+
+Celery
+
+PostgreSQL
+
+Múltiplos serviços pesados simultâneos
+
+Dividir o sistema em módulos claros:
+
+Strategy Engine (arquétipos + hooks)
+
+Narrative Engine
+
+Batch Organizer
+
+File Watcher
+
+Render Engine
+
+Analytics leve
+
+ENTREGA OBRIGATÓRIA
+
+Definição estratégica completa da marca.
+
+Arquitetura técnica ajustada ao hardware.
+
+Estrutura de pastas do projeto.
+
+Blueprint técnico detalhado.
+
+Estratégia de crescimento futura (versão VPS 16GB+).
+
+Justificativa técnica das escolhas.
+
+OBJETIVO FINAL
+Criar a melhor versão possível da ClipFusion que:
+
+Seja 100% gratuita
+
+Rode localmente
+
+Seja profissional
+
+Tenha identidade forte
+
+Estruture viralização de forma sistemática
+
+Seja escalável no futuro
+Essa é a versão definitiva.
+Sem simplificações genéricas.
+Sem arquitetura inflada.
+Sem soluções incompatíveis com o hardware.
+
+Projete como arquiteto sênior, full stack e full circle focado em produto real.

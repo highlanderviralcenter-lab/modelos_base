@@ -1,0 +1,1349 @@
+# 1. VISÃO ARQUITETURAL EVOLUÍDA - VERSÃO COMPLETA (v2.0)
+
+## 1.1 Princípios Fundamentais & Stack Tecnológico
+
+### Princípios:
+
+- **Consciência sobre Automação:** Núcleo é interpretação semântica, não execução cega.
+- **Arquitetura Híbrida Humano-no-Loop:** Automação inteligente + execução manual controlada.
+- **File-Centric Workflow:** Comunicação via pastas/arquivos estruturados.
+- **Separação Radical:** Significado → Interpretação → Execução Manual → Síntese Automática.
+- **Proteção de Originalidade:** Anti-Copyright Engine integrado em todas as saídas — cada vídeo é digitalmente único.
+- **Resiliência por Design:** Retry automático, circuit breakers e health checks em todos os serviços.
+- **Observabilidade Total:** Métricas de negócio e técnicas correlacionadas por project_id único.
+
+### Stack Tecnológico Atualizado (v2.0):
+
+| Camada | Tecnologia | Justificativa |
+|--------|-----------|--------------|
+| Backend Core | Python 3.12+, FastAPI, Pydantic v2 | Performance assíncrona, validação forte |
+| Processamento de Vídeo | FFmpeg 6.0+ direto (sem MoviePy como compositor) | 3x mais rápido, 60% menos RAM |
+| Composição de Alto Nível | MoviePy 2.x | Apenas para operações complexas de composição |
+| Aceleração de Hardware | Intel VA-API (iHD driver) | Encode QSV sem GPU dedicada |
+| Anti-Copyright Engine | cv2, librosa, scipy, soundfile | Fingerprint evasion imperceptível |
+| Orquestração de Fluxo | Celery + Redis 7.x | Tasks assíncronas com persistência |
+| File Watching | watchdog + inotify (Linux) | Eventos reais, sem polling |
+| NLP / Arquétipos | transformers, KeyBERT, torch | Singleton com lazy loading |
+| Armazenamento | PostgreSQL 15 + Redis 7 | Metadados + cache/filas |
+| Monitoramento | Prometheus + Grafana | Métricas negócio + técnicas |
+| Infraestrutura | Docker Compose (dev) → Kubernetes (prod) | Portabilidade total |
+
+---
+
+## 1.2 Diagrama Arquitetural Detalhado (Nível de Implementação v2.0)
+
+```
+graph TB
+    %% ===== CAMADA DE ENTRADA & INTERPRETAÇÃO =====
+    subgraph C1["CAMADA 1: INPUT & INTERPRETAÇÃO"]
+        TXT[Texto Bruto]
+        NRE[Narrative Engine v2\nSingleton + Model Cache]
+        AM[Archetype Map\nJSON Schema Validado]
+        EMO[Emotion Pipeline\nDistilRoBERTa]
+        KW[KeyBERT\nall-MiniLM-L6-v2]
+
+        TXT --> NRE
+        AM --> NRE
+        NRE --> EMO
+        NRE --> KW
+    end
+
+    %% ===== CAMADA DE PREPARAÇÃO DE LOTE =====
+    subgraph C2["CAMADA 2: PREPARAÇÃO DE LOTE (BATCH)"]
+        BATCH[Batch Job Generator]
+        VALID[Batch Validator]
+        FS_GEN[File Structure Generator]
+        ACE_SEED[Anti-Copyright\nSeed Generator]
+
+        NRE --> BATCH
+        BATCH --> VALID
+        BATCH --> FS_GEN
+        BATCH --> ACE_SEED
+    end
+
+    %% ===== SAÍDAS DA CAMADA 2 =====
+    subgraph Outputs["SAÍDAS ESTRUTURADAS"]
+        PROJ_ROOT[📁 project_root/]
+        PROMPTS[📁 prompts/\npara ferramentas GRATUITAS.txt]
+        CONFIG[⚙️ config.yaml\nproject_id, archetypes, paths, ace_seed]
+        INSTRUCT[📄 INSTRUCTIONS.md\nstep-by-step guide v2]
+        WATCH_DIRS[📁 input_assets/\nvideo/, audio/ vazios]
+    end
+
+    FS_GEN --> PROJ_ROOT
+    VALID --> PROMPTS
+    VALID --> CONFIG
+    VALID --> INSTRUCT
+    FS_GEN --> WATCH_DIRS
+    ACE_SEED --> CONFIG
+
+    %% ===== CAMADA DE EXECUÇÃO MANUAL =====
+    subgraph C3["CAMADA 3: EXECUÇÃO MANUAL (HUMANO)"]
+        HUMAN[🧑 Assistente]
+        WEB_TOOLS[🌐 Ferramentas Web\nGRATUITAS]
+        DOWNLOAD[💾 Download & Organização]
+
+        HUMAN -- "Copia prompts" --> WEB_TOOLS
+        WEB_TOOLS -- "Gera conteúdo" --> DOWNLOAD
+        DOWNLOAD -- "Salva nas pastas" --> WATCH_DIRS
+    end
+
+    %% ===== CAMADA DE MONITORAMENTO =====
+    subgraph C4["CAMADA 4: MONITORAMENTO & DISPARO"]
+        FS_WATCH[👁️ File System Watcher\ninotify real + wait_for_ready]
+        REDIS_Q[Redis Queue\nCelery Tasks]
+        VALIDATOR[Batch Completion Validator\nffprobe + naming + timestamp]
+        RETRY[Retry Logic\n3x com backoff exponencial]
+
+        WATCH_DIRS -- "Evento: novo arquivo" --> FS_WATCH
+        FS_WATCH --> VALIDATOR
+        VALIDATOR -- "Arquivo inválido?" --> RETRY
+        RETRY --> VALIDATOR
+        VALIDATOR -- "Lote completo?" --> REDIS_Q
+    end
+
+    %% ===== CAMADA ANTI-COPYRIGHT =====
+    subgraph C4B["CAMADA 4B: ANTI-COPYRIGHT ENGINE (NOVO)"]
+        VFE[Video Fingerprint\nEvasion\n8 técnicas]
+        AFE[Audio Fingerprint\nEvasion\n5 técnicas]
+        MDR[Metadata\nRandomizer\nStrip + Inject]
+        AUS[Anti-Pattern\nUpload Scheduler]
+
+        REDIS_Q --> VFE
+        VFE --> AFE
+        AFE --> MDR
+        MDR --> AUS
+    end
+
+    %% ===== CAMADA DE PROCESSAMENTO AUTOMÁTICO =====
+    subgraph C5["CAMADA 5: PROCESSAMENTO AUTOMÁTICO"]
+        CELERY_W[Celery Workers\nconcurrency=2]
+        RSE[Render & Sync Engine v2\nFFmpeg direto + VA-API]
+        C_AI[Creativity AI Module\nNarrative Engine Singleton]
+        FORMAT[Adaptive Formatter\nCRF adaptativo por plataforma]
+        CB[Circuit Breaker\nfailsafe entre serviços]
+
+        REDIS_Q --> CELERY_W
+        CELERY_W --> RSE
+        RSE --> C_AI
+        C_AI --> FORMAT
+        CELERY_W --> CB
+        CB --> CELERY_W
+    end
+
+    %% ===== CAMADA DE SAÍDA & PLATAFORMA =====
+    subgraph C6["CAMADA 6: SAÍDA & PLATAFORMA"]
+        CF_CORE[ClipFusion Core\nGestão de Projetos]
+        METADATA[Metadata Generator\nRandomizado por projeto]
+        PUBLISH[Publishing Scheduler\nAnti-Pattern Timing]
+        FINAL_OUT[📁 output/\nfinal_videos/, reports/]
+        QA[QA Automático\nVMAF + sync ±40ms]
+
+        FORMAT --> CF_CORE
+        MDR --> CF_CORE
+        CF_CORE --> QA
+        QA --> METADATA
+        METADATA --> PUBLISH
+        AUS --> PUBLISH
+        PUBLISH --> FINAL_OUT
+    end
+
+    %% ===== CAMADA DE OBSERVABILIDADE =====
+    subgraph C7["CAMADA 7: OBSERVABILIDADE"]
+        PROM[Prometheus Metrics]
+        GRAF[Grafana Dashboards]
+        LOGS[Structured Logging\nJSON Lines + project_id]
+        ALERTS[Alert Manager]
+        CORR[Correlation ID\nproject_id em todo stack]
+
+        C1 --> PROM
+        C2 --> PROM
+        C4 --> PROM
+        C4B --> PROM
+        C5 --> PROM
+        PROM --> GRAF
+        C1 --> LOGS
+        C5 --> LOGS
+        CORR --> LOGS
+        PROM --> ALERTS
+    end
+```
+
+---
+
+## 1.3 Especificação Técnica dos Módulos (Nível de Implementação v2.0)
+
+### 1.3.1 Narrative Engine v2 — Singleton com Cache de Modelos
+
+**Problema resolvido:** Na v1 os modelos NLP (4GB+) eram carregados a cada requisição. Na v2 usamos padrão Singleton thread-safe com lazy loading — os modelos são carregados uma única vez na inicialização do container.
+
+```python
+# narrative_engine/engine_v2.py
+class NarrativeEngineV2:
+    """
+    Singleton thread-safe com lazy loading de modelos NLP.
+    Carrega ~4GB de modelos uma única vez por processo.
+    """
+
+    _instance = None
+    _lock = threading.Lock()
+    _models_loaded = False
+
+    INPUT_FORMATS = ["txt", "md", "json", "docx"]
+
+    NLP_MODELS = {
+        "sentiment": "distilbert-base-uncased-finetuned-sst-2-english",
+        "emotion":   "j-hartmann/emotion-english-distilroberta-base",
+        "keywords":  "KeyBERT (all-MiniLM-L6-v2)"
+    }
+
+    ARCHETYPE_MAPPING_RULES = {
+        "01_despertar": {
+            "triggers":           ["incômodo", "algo errado", "despertar", "primeira vez"],
+            "emotional_range":    {"valence": [-0.3, 0.1], "arousal": [0.4, 0.8]},
+            "confidence_threshold": 0.75,
+            "voice_config":       {"voice": "antony", "speed": 0.9,  "tone": "thoughtful"},
+            "visual_metaphor":    "luz entrando por janela fechada",
+            "soundscape":         "cinematic_ambient_low"
+        },
+        "02_tensao": {
+            "triggers":           ["pressão", "conflito", "ameaça", "medo"],
+            "emotional_range":    {"valence": [-0.5, -0.2], "arousal": [0.5, 0.9]},
+            "confidence_threshold": 0.72,
+            "voice_config":       {"voice": "aria",   "speed": 1.0,  "tone": "tense"},
+            "visual_metaphor":    "corda sendo esticada",
+            "soundscape":         "string_tension_build"
+        },
+        "03_confronto": {
+            "triggers":           ["confronto", "enfrentamento", "resistência", "reação"],
+            "emotional_range":    {"valence": [-0.6, -0.1], "arousal": [0.7, 1.0]},
+            "confidence_threshold": 0.78,
+            "voice_config":       {"voice": "antony", "speed": 1.1,  "tone": "intense"},
+            "visual_metaphor":    "choque de ondas",
+            "soundscape":         "percussion_intense"
+        },
+        "04_virada": {
+            "triggers":           ["mudança", "decisão", "ponto de inflexão", "escolha"],
+            "emotional_range":    {"valence": [0.0, 0.4], "arousal": [0.5, 0.8]},
+            "confidence_threshold": 0.75,
+            "voice_config":       {"voice": "duet",   "speed": 1.0,  "tone": "hopeful"},
+            "visual_metaphor":    "porta se abrindo",
+            "soundscape":         "piano_hopeful"
+        },
+        "05_revelacao": {
+            "triggers":           ["descoberta", "entender", "perceber", "clareza"],
+            "emotional_range":    {"valence": [0.1, 0.5], "arousal": [0.4, 0.7]},
+            "confidence_threshold": 0.76,
+            "voice_config":       {"voice": "aria",   "speed": 0.95, "tone": "mysterious"},
+            "visual_metaphor":    "névoa se dissipando",
+            "soundscape":         "ambient_mystery"
+        },
+        "06_justo_engolido": {
+            "triggers":           ["justo", "integridade", "pagar preço", "recusar-se"],
+            "emotional_range":    {"valence": [-0.5, -0.1], "arousal": [0.6, 0.9]},
+            "confidence_threshold": 0.80,
+            "voice_config":       {"voice": "antony", "speed": 1.05, "tone": "resolute"},
+            "visual_metaphor":    "pedra no turbilhão",
+            "soundscape":         "orchestral_determined"
+        },
+        "07_transformacao": {
+            "triggers":           ["transformação", "renascimento", "novo eu", "superar"],
+            "emotional_range":    {"valence": [0.3, 0.8], "arousal": [0.5, 0.8]},
+            "confidence_threshold": 0.74,
+            "voice_config":       {"voice": "duet",   "speed": 1.0,  "tone": "inspiring"},
+            "visual_metaphor":    "borboleta emergindo",
+            "soundscape":         "uplifting_swell"
+        },
+        "08_resolucao": {
+            "triggers":           ["resolução", "paz", "equilíbrio", "chegada"],
+            "emotional_range":    {"valence": [0.2, 0.6], "arousal": [0.2, 0.5]},
+            "confidence_threshold": 0.73,
+            "voice_config":       {"voice": "antony", "speed": 0.9,  "tone": "calm"},
+            "visual_metaphor":    "águas se acalmando",
+            "soundscape":         "ambient_calm"
+        },
+        "09_impacto": {
+            "triggers":           ["impacto", "resultado", "consequência", "efeito"],
+            "emotional_range":    {"valence": [0.1, 0.7], "arousal": [0.7, 1.0]},
+            "confidence_threshold": 0.77,
+            "voice_config":       {"voice": "aria",   "speed": 1.1,  "tone": "powerful"},
+            "visual_metaphor":    "onda quebrando em rocha",
+            "soundscape":         "cinematic_impact"
+        },
+        "10_encerramento": {
+            "triggers":           ["fim", "conclusão", "lição", "aprendizado"],
+            "emotional_range":    {"valence": [0.2, 0.7], "arousal": [0.1, 0.4]},
+            "confidence_threshold": 0.75,
+            "voice_config":       {"voice": "duet",   "speed": 0.85, "tone": "reflective"},
+            "visual_metaphor":    "horizonte ao amanhecer",
+            "soundscape":         "soft_outro"
+        }
+    }
+
+    OUTPUT_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "project_id":  {"type": "string", "format": "uuid"},
+            "ace_seed":    {"type": "integer", "description": "Seed Anti-Copyright Engine"},
+            "segments": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "segment_id":      {"type": "integer"},
+                        "archetype":       {"type": "string",
+                                           "enum": ["01_despertar","02_tensao","03_confronto",
+                                                    "04_virada","05_revelacao","06_justo_engolido",
+                                                    "07_transformacao","08_resolucao",
+                                                    "09_impacto","10_encerramento"]},
+                        "text":            {"type": "string"},
+                        "emotional_profile": {
+                            "valence":   {"type": "number", "minimum": -1, "maximum": 1},
+                            "arousal":   {"type": "number", "minimum": 0,  "maximum": 1},
+                            "dominant_emotion": {"type": "string"}
+                        },
+                        "voice_config": {
+                            "voice":   {"type": "string", "enum": ["antony","aria","duet"]},
+                            "speed":   {"type": "number", "minimum": 0.5, "maximum": 1.5},
+                            "tone":    {"type": "string"},
+                            "effects": {"type": "array", "items": {"type": "string"}}
+                        },
+                        "visual_metaphor": {"type": "string"},
+                        "soundscape":      {"type": "string"},
+                        "confidence":      {"type": "number", "minimum": 0, "maximum": 1}
+                    },
+                    "required": ["segment_id","archetype","text","voice_config"]
+                }
+            }
+        }
+    }
+```
+
+---
+
+### 1.3.2 Anti-Copyright Engine — Especificação Técnica (NOVO)
+
+**Propósito:** Garantir que cada vídeo gerado seja digitalmente único, evitando detecção por Content ID (YouTube), Rights Manager (Meta) e sistemas similares do TikTok. Todas as técnicas são imperceptíveis ao olho e ouvido humanos.
+
+#### Módulo A — Video Fingerprint Evasion (8 técnicas)
+
+```python
+# anti_copyright/video_transformer.py
+
+TECHNIQUES = {
+    "micro_crop": {
+        "description": "Corte de 1-3px por borda + redimensionamento original",
+        "visibility":  "imperceptível",
+        "fingerprint_impact": "muda hash de todos os frames",
+        "params": {"min_px": 1, "max_px": 3, "per_edge": True}
+    },
+    "subtle_color_shift": {
+        "description": "Ajuste RGB ±2/255 por canal",
+        "visibility":  "imperceptível (limiar humano: ±5/255)",
+        "fingerprint_impact": "altera checksum de cor de cada frame",
+        "params": {"max_shift_normalized": 0.008}
+    },
+    "micro_speed_variation": {
+        "description": "Variação de velocidade ±0.5%",
+        "visibility":  "imperceptível (limiar humano: ±3%)",
+        "fingerprint_impact": "muda fingerprint temporal completo",
+        "params": {"range": [0.995, 1.005]}
+    },
+    "noise_injection_imperceptible": {
+        "description": "Ruído gaussiano sigma=0.5",
+        "visibility":  "imperceptível (altera cada pixel em ±1 máx)",
+        "fingerprint_impact": "invalida hash frame a frame",
+        "params": {"sigma": 0.5}
+    },
+    "spatial_frequency_shift": {
+        "description": "Perturbação DCT nas altas frequências",
+        "visibility":  "imperceptível (frequências invisíveis ao olho)",
+        "fingerprint_impact": "muda assinatura de compressão",
+        "params": {"region": "bottom_right_quadrant", "amplitude": 0.1}
+    },
+    "chroma_micro_shift": {
+        "description": "Deslocamento sub-pixel em Cr/Cb (YCbCr)",
+        "visibility":  "imperceptível",
+        "fingerprint_impact": "altera fingerprint de cor sem mudar luminância",
+        "params": {"shift_range": [-1, 1], "channels": ["Cr", "Cb"]}
+    },
+    "temporal_resampling": {
+        "description": "Re-amostragem fps → fps_intermediário → fps original",
+        "visibility":  "imperceptível",
+        "fingerprint_impact": "muda estrutura GOP completamente",
+        "params": {"rate_range": [0.998, 1.002]}
+    },
+    "frame_timing_jitter": {
+        "description": "Jitter ±1ms nos timestamps dos frames",
+        "visibility":  "imperceptível",
+        "fingerprint_impact": "muda fingerprint temporal do container",
+        "params": {"jitter_ms": [-0.001, 0.001]}
+    }
+}
+
+INTENSITY_PROFILES = {
+    "low":    ["micro_crop", "subtle_color_shift", "metadata_randomize"],
+    "medium": ["micro_crop", "subtle_color_shift", "micro_speed_variation",
+               "noise_injection_imperceptible", "metadata_randomize", "frame_timing_jitter"],
+    "high":   ["micro_crop", "subtle_color_shift", "micro_speed_variation",
+               "noise_injection_imperceptible", "spatial_frequency_shift",
+               "temporal_resampling", "chroma_micro_shift", "metadata_randomize",
+               "frame_timing_jitter"]
+}
+```
+
+#### Módulo B — Audio Fingerprint Evasion (5 técnicas)
+
+```python
+# anti_copyright/audio_transformer.py
+
+AUDIO_TECHNIQUES = {
+    "pitch_micro_shift": {
+        "description": "Pitch shift ±0.05 semitones",
+        "visibility":  "imperceptível (limiar humano: ±5 cents = 0.05 semitones)",
+        "fingerprint_impact": "invalida fingerprint de correlação espectral",
+        "params": {"range_semitones": [-0.05, 0.05]}
+    },
+    "time_stretch_imperceptible": {
+        "description": "Time stretch ±0.3%",
+        "visibility":  "imperceptível (limiar humano: ±1%)",
+        "fingerprint_impact": "muda fingerprint temporal sem alterar pitch",
+        "params": {"rate_range": [0.997, 1.003]}
+    },
+    "noise_floor_injection": {
+        "description": "Ruído branco -80dB (amplitude 0.0001)",
+        "visibility":  "imperceptível (abaixo do piso de ruído típico)",
+        "fingerprint_impact": "muda correlação entre frames de áudio",
+        "params": {"amplitude": 0.0001, "variance": [0.5, 1.5]}
+    },
+    "eq_micro_variation": {
+        "description": "EQ ±0.5dB em 3 bandas aleatórias",
+        "visibility":  "imperceptível (limiar humano: ±1dB em banda estreita)",
+        "fingerprint_impact": "altera resposta em frequência única do arquivo",
+        "params": {"gain_db_range": [-0.5, 0.5], "bands": [200, 1000, 4000, 8000, 16000]}
+    },
+    "harmonic_injection": {
+        "description": "Harmônicos -60dB em frequências acima de 3kHz",
+        "visibility":  "imperceptível (abaixo do limiar de audição em alta freq)",
+        "fingerprint_impact": "cria assinatura de harmônicos única por arquivo",
+        "params": {"amplitude": 0.001, "frequencies": [3000, 5000, 7000, 9000]}
+    }
+}
+```
+
+#### Módulo C — Metadata Randomizer
+
+```yaml
+# anti_copyright/metadata_strategy.yaml
+
+strip_phase:
+  ffmpeg_args: ["-map_metadata", "-1"]
+  removes:
+    - creation_time
+    - encoder
+    - comment
+    - copyright
+    - description
+    - title
+    - artist
+    - album
+    - all_track_metadata
+
+inject_phase:
+  strategy: "plausible_randomization"
+  fields:
+    creation_time:
+      method: "random_date_last_2_years"
+      format: "ISO8601"
+    encoder:
+      options:
+        - "libx264 (High@L4.1)"
+        - "libx265 (Main@L4.0)"
+        - "H.264/AVC Codec"
+    comment:
+      options:
+        - "Exported at {1-4}K"
+        - "Processed with color grade"
+        - "Edit v{1-5}.{0-9}"
+        - ""  # vazio é válido
+  seed_source: "project_id MD5"
+  deterministic: true  # mesmo project_id → mesmos metadados
+```
+
+#### Módulo D — Anti-Pattern Upload Scheduler
+
+```python
+# anti_copyright/upload_scheduler.py
+
+PLATFORM_CONFIGS = {
+    "tiktok": {
+        "peak_windows":   [(7, 9), (12, 14), (19, 22)],
+        "interval_hours": [4, 8],
+        "max_per_day":    5,
+        "jitter_pct":     0.20
+    },
+    "instagram": {
+        "peak_windows":   [(11, 13), (19, 21)],
+        "interval_hours": [18, 30],
+        "max_per_day":    2,
+        "jitter_pct":     0.20
+    },
+    "youtube": {
+        "peak_windows":   [(14, 16), (19, 21)],
+        "interval_hours": [48, 96],
+        "max_per_day":    1,
+        "jitter_pct":     0.20
+    },
+    "kwai": {
+        "peak_windows":   [(12, 14), (20, 23)],
+        "interval_hours": [6, 12],
+        "max_per_day":    4,
+        "jitter_pct":     0.20
+    }
+}
+```
+
+---
+
+### 1.3.3 Batch Job Generator v2 — Estrutura de Pastas e Arquivos
+
+```yaml
+# Estrutura de pastas GERADA automaticamente v2.0
+project_structure:
+  root_template: "clipfusion_project_{date}_{batch_id}"
+
+  directories:
+    mandatory:
+      - prompts/
+      - input_assets/video/
+      - input_assets/audio/
+      - assets/branding/
+      - assets/sound_design/
+      - output/final_videos/
+      - output/platform_formats/
+      - output/reports/
+      - automation_scripts/
+      - anti_copyright/  # NOVO: seeds e relatório de transformações
+
+    conditional:
+      - work_in_progress/   # Se projeto marcado como "draft"
+      - revisions/          # Se habilitado versionamento
+
+  file_templates:
+    config.yaml:
+      schema: "config_schema_v2"
+      required_fields:
+        - project_id
+        - project_name
+        - archetype_sequence
+        - voice_profiles
+        - expected_files_count
+        - watch_paths
+        - ace_seed              # NOVO: seed Anti-Copyright Engine
+        - ace_intensity         # NOVO: low | medium | high
+        - upload_schedule       # NOVO: schedule gerado pelo AntiPatternUploadScheduler
+        - schema_version        # NOVO: "2.0"
+
+    INSTRUCTIONS.md:
+      version: "2.0"
+      sections:
+        - "Visão Geral do Projeto (v2.0)"
+        - "Novidades: Anti-Copyright Engine ativo"
+        - "Passo 1: Geração de Vídeo (ferramenta gratuita)"
+        - "Passo 2: Geração de Áudio (ferramenta gratuita)"
+        - "Passo 3: Upload para Pastas Monitoradas"
+        - "Passo 4: Verificação Automática (ffprobe)"
+        - "Passo 5: Aguardar Processamento Anti-Copyright"
+        - "Passo 6: Revisão do Output Final"
+        - "Passo 7: Upload Agendado (schedule em config.yaml)"
+        - "Solução de Problemas"
+        - "FAQ: Por que meu vídeo parece levemente diferente do original?"
+
+    prompts/:
+      naming_convention: "{platform}_{archetype_id}_{archetype_name}.txt"
+      platforms: ["runway", "elevenlabs", "soundful", "suno", "udio"]
+      content_structure:
+        runway: |
+          # ClipFusion Archetype: {archetype_name}
+          # Visual Metaphor: {visual_metaphor}
+          # ACE: Este vídeo receberá transformações digitais automáticas
+
+          Prompt: {visual_prompt}
+
+          Parameters:
+          - Duration: 5s
+          - Style: cinematic
+          - Motion: {motion_type}
+          - Color Palette: {color_palette}
+          - Resolution: 1080x1920 (vertical) ou 1920x1080 (horizontal)
+
+          Notes: {additional_notes}
+
+        elevenlabs: |
+          # ClipFusion Archetype: {archetype_name}
+          # Voice Profile: {voice_profile}
+          # ACE: Este áudio receberá micro-transformações automáticas
+
+          Text: "{narration_text}"
+
+          Voice Settings:
+          - Voice: {voice_name}
+          - Stability: {stability}
+          - Clarity: {clarity}
+          - Speed: {speed}
+
+          Emotional Tone: {emotional_tone}
+```
+
+---
+
+### 1.3.4 File System Watcher v2 — inotify Real + wait_for_ready
+
+**Problema resolvido na v1:** Polling de 30s podia perder eventos em burst e iniciava processamento com arquivos ainda sendo copiados.
+
+```python
+# file_system_watcher/specification_v2.py
+
+class FileSystemWatcherSpecV2:
+
+    WATCHED_DIRECTORIES = {
+        "video": {
+            "path":              "/input_assets/video/",
+            "expected_count":    10,
+            "file_patterns":     ["*.mp4", "*.mov", "*.avi", "*.mkv"],
+            "max_file_size":     500 * 1024 * 1024,  # 500MB
+            "validation_rules": {
+                "duration":    {"min": 4.5, "max": 5.5},
+                "resolution":  {"min_width": 1280, "min_height": 720},
+                "codec":       ["h264", "h265", "vp9"]
+            }
+        },
+        "audio": {
+            "path":              "/input_assets/audio/",
+            "expected_count":    10,
+            "file_patterns":     ["*.wav", "*.mp3", "*.flac", "*.aac"],
+            "max_file_size":     50 * 1024 * 1024,   # 50MB
+            "validation_rules": {
+                "duration":    {"min": 4.5, "max": 5.5},
+                "sample_rate": {"min": 44100},
+                "channels":    {"min": 1, "max": 2}
+            }
+        }
+    }
+
+    # MELHORIA: inotify nativo ao invés de polling
+    MONITORING_ENGINE    = "watchdog+inotify"   # era: polling 30s
+    MONITORING_INTERVAL  = "event-driven"        # era: 30s fixo
+
+    # NOVO: espera arquivo estabilizar antes de processar
+    WAIT_FOR_READY = {
+        "method":          "size_stability_check",
+        "check_interval_s": 1,
+        "stable_count":    3,    # 3s estável = arquivo pronto
+        "timeout_s":       60
+    }
+
+    EVENT_TYPES = ["created", "moved"]  # "modified" removido (evita processamento duplo)
+
+    BATCH_COMPLETION_LOGIC = {
+        "trigger_conditions": {
+            "all_files_present":        True,
+            "naming_convention_valid":  True,
+            "file_validation_passed":   True,
+            "timestamp_coherence":      True,  # Todos dentro de 24h
+            "file_size_stable":         True   # NOVO
+        },
+        "validation_sequence": [
+            "wait_for_file_ready",      # NOVO: aguarda estabilizar
+            "check_file_count",
+            "validate_naming_pattern",
+            "verify_metadata_ffprobe",
+            "run_media_validation",
+            "check_timestamp_coherence"
+        ]
+    }
+
+    RETRY_LOGIC = {
+        "validation_errors": {
+            "max_retries":       3,
+            "backoff_seconds":  [5, 15, 60],
+            "on_final_failure": "send_alert_and_log"
+        }
+    }
+
+    NOTIFICATION_SYSTEM = {
+        "on_batch_complete": {
+            "actions": ["create_celery_task", "update_database",
+                       "send_notification", "log_structured"]
+        },
+        "on_validation_error": {
+            "actions": ["log_error", "send_alert",
+                       "update_project_status", "notify_user"]
+        },
+        "on_file_size_anomaly": {
+            "actions": ["log_warning", "wait_and_retry"]   # NOVO
+        }
+    }
+```
+
+---
+
+### 1.3.5 Render & Sync Engine v2 — FFmpeg Direto + VA-API
+
+**Mudanças principais v1 → v2:**
+- MoviePy substituído por FFmpeg direto como compositor principal (3x mais rápido, 60% menos RAM)
+- MoviePy mantido apenas para operações de alto nível do Anti-Copyright Engine
+- CRF adaptativo por plataforma (era fixo em 23)
+- Intel VA-API habilitado para aceleração QSV
+- Suporte a 5 plataformas (era 3)
+
+```yaml
+# render_sync_engine/pipeline_v2.yaml
+processing_pipeline:
+  engine: "ffmpeg_direct"         # v1: moviepy_primary
+  hardware_acceleration: "vaapi"  # NOVO: Intel HD 520 suportado
+  vaapi_device: "/dev/dri/renderD128"
+
+  stages:
+    - stage: "pre_processing"
+      tasks:
+        - name: "file_validation"
+          tool: "ffprobe"
+          params: ["-v", "error", "-print_format", "json",
+                   "-show_format", "-show_streams"]
+          output: "validation_report.json"  # NOVO: relatório estruturado
+
+        - name: "normalize_audio"
+          tool: "ffmpeg"
+          params: ["-i", "{input}", "-af",
+                   "loudnorm=I=-16:LRA=11:TP=-1.5", "{output}"]
+
+        - name: "video_conversion"
+          tool: "ffmpeg"
+          params: ["-i", "{input}", "-c:v", "libx264",
+                   "-preset", "medium", "-crf", "23", "{output}"]
+
+    - stage: "anti_copyright"     # NOVO STAGE
+      tasks:
+        - name: "video_fingerprint_evasion"
+          module: "anti_copyright.video_transformer.VideoFingerprintEvasion"
+          intensity: "{config.ace_intensity}"
+          seed: "{config.ace_seed}"
+
+        - name: "audio_fingerprint_evasion"
+          module: "anti_copyright.audio_transformer.AudioFingerprintEvasion"
+          intensity: "{config.ace_intensity}"
+          seed: "{config.ace_seed}"
+
+        - name: "metadata_strip_and_inject"
+          module: "anti_copyright.metadata_randomizer.MetadataRandomizer"
+          project_id: "{config.project_id}"
+
+    - stage: "synchronization"
+      tasks:
+        - name: "audio_analysis"
+          tool: "librosa"
+          params:
+            sr: 44100
+            hop_length: 512
+            n_fft: 2048
+
+        - name: "peak_detection"
+          algorithm: "spectral_centroid_peaks"
+          threshold: 0.7
+
+        - name: "frame_alignment"
+          algorithm: "dynamic_time_warping"
+          precision: "frame_accurate"
+
+    - stage: "rendering"
+      tasks:
+        - name: "composite_ffmpeg_direct"  # v1: composite_audio_video (MoviePy)
+          tool: "ffmpeg"
+          use_vaapi: "{config.use_vaapi}"
+          params:
+            filter_complex: "[0:v]{scale_filter}[v]"
+            map: ["[v]", "1:a"]
+            movflags: "+faststart"   # NOVO: streaming otimizado
+
+        - name: "apply_transitions"
+          transitions:
+            - type: "crossfade"
+              duration: 0.5
+            - type: "fade_to_black"
+              duration: 1.0
+
+        - name: "add_branding"
+          elements:
+            - type: "lower_third"
+              position: "bottom_left"
+              duration: "first_2_seconds"
+            - type: "watermark"
+              opacity: 0.3
+              position: "top_right"
+
+    - stage: "output_generation"
+      tasks:
+        - name: "generate_platform_formats"
+          formats:
+            tiktok:
+              width: 1080, height: 1920, duration: 60
+              codec: "h264", crf: 20, preset: "medium"
+              bitrate: "4000k", profile: "high", level: "4.1"
+            youtube:
+              width: 1920, height: 1080, duration: "original"
+              codec: "h264", crf: 18, preset: "slow"
+              bitrate: "8000k", profile: "high", level: "4.2"
+            instagram_reels:
+              width: 1080, height: 1920, duration: 90
+              codec: "h264", crf: 21, preset: "medium"
+              bitrate: "3500k", profile: "high", level: "4.0"
+            instagram_feed:
+              width: 1080, height: 1080, duration: 60
+              codec: "h264", crf: 21, preset: "medium"
+              bitrate: "3500k", profile: "high", level: "4.0"
+            kwai:
+              width: 1080, height: 1920, duration: 60
+              codec: "h264", crf: 22, preset: "medium"
+              bitrate: "3000k", profile: "main",  level: "4.0"
+
+        - name: "generate_metadata"
+          include:
+            - technical_metadata
+            - creative_metadata
+            - performance_metrics
+            - anti_copyright_report   # NOVO
+
+        - name: "quality_assurance"
+          checks:
+            - audio_sync_tolerance:  "±40ms"
+            - video_quality:         "VMAF > 90"    # era: sem checagem
+            - file_size_validation:  true
+            - metadata_stripped:     true            # NOVO
+            - ace_applied:           true            # NOVO
+```
+
+---
+
+## 1.4 Especificação de Infraestrutura (v2.0)
+
+### 1.4.1 Docker Compose para Desenvolvimento
+
+```yaml
+# docker-compose.dev.yaml v2.0
+version: '3.8'
+
+services:
+  narrative-engine:
+    build: ./narrative_engine
+    environment:
+      - NLP_MODELS_PATH=/models
+      - ARCHETYPE_MAP_PATH=/config/archetype_map.json
+      - MODEL_CACHE_ENABLED=true        # NOVO: Singleton ativo
+      - SCHEMA_VERSION=2.0              # NOVO
+    volumes:
+      - ./projects:/projects
+      - ./models:/models
+      - ./config:/config
+    deploy:
+      resources:
+        limits:     {memory: 6G}        # NLP models ~4GB
+        reservations: {memory: 2G}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  batch-generator:
+    build: ./batch_generator
+    depends_on:
+      narrative-engine:
+        condition: service_healthy      # NOVO: espera health check
+    environment:
+      - PROJECTS_ROOT=/projects
+      - TEMPLATES_PATH=/templates
+      - ACE_DEFAULT_INTENSITY=medium    # NOVO
+    volumes:
+      - ./projects:/projects
+      - ./templates:/templates
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  file-watcher:
+    build: ./file_watcher
+    depends_on:
+      - redis
+    environment:
+      - WATCH_PATHS=/projects
+      - REDIS_URL=redis://redis:6379/0
+      - INOTIFY_ENABLED=true            # NOVO: inotify real
+      - WAIT_FOR_READY_ENABLED=true     # NOVO
+      - WAIT_STABLE_COUNT=3
+    volumes:
+      - ./projects:/projects
+    sysctls:
+      fs.inotify.max_user_watches: "524288"   # NOVO: necessário para inotify
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import redis; redis.from_url('redis://redis:6379/0').ping()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  render-engine:
+    build: ./render_engine
+    depends_on:
+      - redis
+    environment:
+      - FFMPEG_BINARY=/usr/bin/ffmpeg
+      - REDIS_URL=redis://redis:6379/0
+      - MAX_CONCURRENT_JOBS=2
+      - USE_VAAPI=true                  # NOVO: Intel VA-API
+      - VAAPI_DEVICE=/dev/dri/renderD128
+      - ANTICOPYRIGHT_ENABLED=true      # NOVO
+      - ANTICOPYRIGHT_INTENSITY=medium  # NOVO
+    volumes:
+      - ./projects:/projects
+      - /tmp:/tmp
+    devices:
+      - /dev/dri:/dev/dri               # NOVO: acesso Intel GPU
+    group_add:
+      - video                           # NOVO: permissão VA-API
+    deploy:
+      resources:
+        limits:     {memory: 4G}
+        reservations: {memory: 1G}
+    healthcheck:
+      test: ["CMD", "ffmpeg", "-version"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  celery-worker:
+    build: ./render_engine
+    command: celery -A tasks worker --concurrency=2 --loglevel=info
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://clipfusion:${DB_PASSWORD}@postgres/clipfusion
+      - USE_VAAPI=true
+      - ANTICOPYRIGHT_ENABLED=true
+    volumes:
+      - ./projects:/projects
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru    # NOVO: evição automática
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: clipfusion
+      POSTGRES_USER: clipfusion
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clipfusion"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=7d'   # NOVO: retenção explícita
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false          # NOVO: segurança
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/dashboards:/etc/grafana/provisioning/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+volumes:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+```
+
+---
+
+### 1.4.2 Configuração de Monitoramento (Prometheus v2)
+
+```yaml
+# monitoring/prometheus.yml v2.0
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'clipfusion-services'
+    static_configs:
+      - targets:
+          - 'narrative-engine:8000'
+          - 'batch-generator:8001'
+          - 'file-watcher:8002'
+          - 'render-engine:8003'
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:9187']
+
+rule_files:
+  - 'alerts.yml'
+  - 'ace_alerts.yml'   # NOVO: alertas Anti-Copyright Engine
+```
+
+---
+
+### 1.4.3 Métricas Monitoradas (Business + Technical v2)
+
+```yaml
+# monitoring/metrics_definitions_v2.yaml
+metrics:
+  business:
+    projects_created_total:
+      type:        counter
+      description: "Total de projetos criados"
+      labels:      ["archetype_count", "complexity", "ace_intensity"]
+
+    batch_completion_time_seconds:
+      type:        histogram
+      description: "Tempo do lote — da criação à conclusão"
+      buckets:     [30, 60, 120, 300, 600]
+
+    manual_processing_delay_seconds:
+      type:        gauge
+      description: "Delay entre geração do lote e upload manual"
+
+    upload_schedule_adherence_pct:     # NOVO
+      type:        gauge
+      description: "% de uploads dentro do schedule anti-pattern"
+
+  technical:
+    file_watcher_events_total:
+      type:        counter
+      description: "Total de eventos de filesystem processados"
+      labels:      ["event_type", "directory"]
+
+    render_job_duration_seconds:
+      type:        histogram
+      description: "Duração dos jobs de render"
+      buckets:     [1, 5, 10, 30, 60, 120]
+
+    media_validation_errors_total:
+      type:        counter
+      description: "Total de erros de validação de mídia"
+      labels:      ["error_type", "severity"]
+
+    ace_transformations_applied_total: # NOVO
+      type:        counter
+      description: "Total de transformações Anti-Copyright aplicadas"
+      labels:      ["technique", "intensity", "media_type"]
+
+    vaapi_encode_jobs_total:           # NOVO
+      type:        counter
+      description: "Jobs de encode usando Intel VA-API"
+      labels:      ["platform", "resolution"]
+
+    model_cache_hits_total:            # NOVO
+      type:        counter
+      description: "Cache hits dos modelos NLP (Singleton)"
+      labels:      ["model_name"]
+
+    system_resources:
+      cpu_usage_percent:    {type: gauge}
+      memory_usage_bytes:   {type: gauge}
+      disk_usage_percent:   {type: gauge}
+      gpu_temp_celsius:     {type: gauge, note: "Intel HD 520 via sensors"}  # NOVO
+```
+
+---
+
+## 1.5 Fluxo de Dados Detalhado v2.0 (Sequência Completa)
+
+```
+sequenceDiagram
+    participant User  as Usuário/Cliente
+    participant NE    as Narrative Engine v2
+    participant BG    as Batch Generator v2
+    participant FS    as File System
+    participant FW    as File Watcher v2
+    participant ACE   as Anti-Copyright Engine
+    participant RE    as Render Engine v2
+    participant DB    as Database
+    participant CF    as ClipFusion Core
+
+    User->>NE: Envia texto (transcrição/roteiro)
+    NE->>NE: Carrega modelos via Singleton (1x por processo)
+    NE->>NE: Analisa semântica + polaridade emocional
+    NE->>NE: Mapeia para arquétipos (01-10) + confidence score
+    NE->>NE: Gera ACE seed único para o projeto
+    NE->>BG: Envia sequência de arquétipos + parâmetros + ace_seed
+
+    BG->>FS: Cria estrutura de pastas v2 (inclui anti_copyright/)
+    BG->>FS: Gera arquivos de prompt (Runway, ElevenLabs, Suno)
+    BG->>FS: Gera INSTRUCTIONS.md v2 + config.yaml v2 (com ace_seed)
+    BG->>FS: Gera upload_schedule.json (anti-pattern timing)
+    BG->>DB: Registra projeto (status: "aguardando_upload", schema_v: "2.0")
+    BG->>User: Retorna caminho do projeto + instruções + schedule
+
+    Note over User,FW: FASE MANUAL (Humano no Loop)
+    User->>FS: Copia prompts para plataformas web gratuitas
+    User->>FS: Faz download dos resultados
+    User->>FS: Coloca arquivos em input_assets/video/ e /audio/
+
+    FW->>FW: Detecta novos arquivos (inotify — evento imediato)
+    FW->>FW: wait_for_ready (aguarda arquivo estabilizar 3s)
+    FW->>FW: Valida nome, formato, tamanho, duração (ffprobe)
+    FW->>FW: Verifica se lote está completo (10+10)
+
+    alt Lote Completo
+        FW->>RE: Dispara tarefa de renderização (via Redis)
+        FW->>DB: Atualiza status para "processando"
+
+        RE->>ACE: Aplica Video Fingerprint Evasion (8 técnicas)
+        ACE->>ACE: Seed determinístico por project_id
+        RE->>ACE: Aplica Audio Fingerprint Evasion (5 técnicas)
+        ACE->>ACE: Transformações abaixo do limiar de percepção humana
+        RE->>ACE: Strip metadados + Inject metadados randomizados
+        ACE-->>RE: Mídia transformada + relatório ACE
+
+        RE->>RE: Pré-processa (normalização, conversão)
+        RE->>RE: Sincroniza áudio-vídeo (análise de picos librosa)
+        RE->>RE: Aplica transições entre arquétipos
+        RE->>RE: Renderiza via FFmpeg direto + VA-API Intel
+        RE->>RE: Gera versões para 5 plataformas (adaptativo CRF)
+        RE->>RE: QA automático (VMAF > 90, sync ±40ms)
+
+        RE->>FS: Salva vídeos em output/final_videos/
+        RE->>FS: Gera relatório técnico JSON + ace_report.json
+        RE->>DB: Atualiza status para "processado"
+        RE->>CF: Notifica conclusão
+
+        CF->>CF: Gera metadados (descrições, hashtags)
+        CF->>CF: Aplica upload schedule anti-pattern
+        CF->>User: Notifica "projeto pronto — schedule de upload disponível"
+    else Lote Incompleto
+        FW->>DB: Registra "arquivos pendentes"
+        FW->>User: Envia alerta detalhado "faltam N arquivos"
+    else Arquivo Inválido
+        FW->>FW: Retry logic (3x com backoff exponencial)
+        FW->>User: Alerta com erro específico do ffprobe
+    end
+```
+
+---
+
+## 1.6 Requisitos de Hardware/Software v2.0
+
+### 1.6.1 Requisitos de Sistema
+
+```yaml
+development_environment:
+  cpu:     "4 cores (Intel i5-6200U ou superior)"
+  memory:  "8GB RAM (16GB recomendado para NLP models + render)"
+  storage: "480GB SSD"
+  gpu:     "Intel HD 520 (VA-API QSV — sem necessidade de NVIDIA)"
+  os:      "Debian Testing / Ubuntu 22.04 LTS"
+  note:    "NVIDIA removida do hardware — Intel HD 520 suportado nativamente"
+
+production_environment:
+  cpu:     "8+ cores"
+  memory:  "32GB+ RAM"
+  storage: "1TB+ NVMe SSD + storage para projetos"
+  gpu:     "Intel Xe / NVIDIA opcional (CUDA para Creativity AI fase 2)"
+  network: "1Gbps+"
+
+software_dependencies:
+  essential:
+    - "Python 3.12+"
+    - "FFmpeg 6.0+"
+    - "Redis 7.0+"
+    - "PostgreSQL 15+"
+    - "Docker 24.0+ / Docker Compose 2.20+"
+    - "intel-media-va-driver-non-free (VA-API)"  # NOVO
+
+  python_packages:
+    core:       ["fastapi", "pydantic", "celery", "redis", "sqlalchemy"]
+    media:      ["moviepy", "opencv-python", "librosa", "pydub", "soundfile"]
+    ml:         ["transformers", "torch", "scikit-learn", "keybert"]
+    anti_copyright: ["opencv-python", "librosa", "scipy", "soundfile"]  # NOVO
+    monitoring: ["prometheus-client", "structlog", "sentry-sdk"]
+    watcher:    ["watchdog"]  # NOVO: inotify real
+```
+
+### 1.6.2 Estimativa de Recursos por Projeto v2.0
+
+| Componente | Espaço Disco | Tempo CPU | Memória | Notas |
+|---|---|---|---|---|
+| Arquivos de Projeto | 50-200MB | — | — | Depende da resolução |
+| NLP Models (carga inicial) | 1-2GB | 10-30s | 4GB | **Singleton: carrega 1x** |
+| Anti-Copyright Engine | ~0MB extra | +20-40s | 1GB pico | Por projeto de 10 vídeos |
+| Renderização FFmpeg+VA-API | 500MB-2GB | **1-3min** | **4GB** | **3x mais rápido que v1** |
+| Output Final (5 plataformas) | 200-800MB | — | — | Múltiplas versões |
+| **Total por Projeto** | **750MB-3GB** | **1.5-4min** | **5GB pico** | **vs 1-6min na v1** |
+
+---
+
+## 1.7 Considerações de Segurança e Conformidade v2.0
+
+### 1.7.1 Estrutura de Permissões de Arquivos
+
+```yaml
+file_permissions:
+  project_directories:
+    mode:  "0750"   # rwxr-x---
+    owner: "clipfusion:clipfusion"
+
+  input_assets:
+    mode:  "0770"   # rwxrwx---
+    note:  "Acesso de escrita para upload manual"
+
+  output:
+    mode:  "0755"   # rwxr-xr-x
+    note:  "Leitura pública para servir vídeos"
+
+  config_files:
+    mode:  "0640"   # rw-r-----
+    note:  "ace_seed nunca versionado no git"
+
+  anti_copyright/:   # NOVO
+    mode:  "0700"   # rwx------
+    note:  "Seeds e relatórios ACE — apenas o serviço acessa"
+```
+
+### 1.7.2 Proteção de Dados e Privacidade
+
+```yaml
+data_protection:
+  input_data:
+    retention:      "30 dias após processamento"
+    encryption:     "AES-256 em repouso"
+    anonymization:  "Remoção de PII dos textos"
+
+  output_videos:
+    ace_watermarking: "Digital watermark imperceptível (ACE)"  # NOVO
+    metadata:         "Strip completo + inject randomizado (ACE)"  # NOVO
+
+  ace_seeds:          # NOVO
+    storage:   "PostgreSQL criptografado"
+    retention: "90 dias (auditoria)"
+    access:    "Apenas render-engine service account"
+
+  compliance:
+    gdpr:
+      right_to_erasure:   "Script de exclusão automática"
+      data_portability:   "Export em formato padrão"
+    lgpd:
+      consent_records:    "Registro de consentimento por projeto"
+```
+
+---
+
+## 1.8 Roadmap de Evolução Técnica v2.0
+
+```
+gantt
+    title Roadmap de Evolução Técnica ClipFusion v2.0
+    dateFormat YYYY-MM
+
+    section MVP v2.0 (Base)
+    Narrative Engine v2 + Singleton      :2026-03, 2M
+    Anti-Copyright Engine (ACE)          :2026-03, 2M
+    Batch Generator v2 (ace_seed)        :2026-04, 1M
+    File System Watcher v2 (inotify)     :2026-04, 1M
+    Render Engine v2 (FFmpeg+VA-API)     :2026-05, 2M
+    Integração Completa v2               :2026-06, 1M
+
+    section Fase 2 (Otimização)
+    Creativity AI Module                 :2026-07, 2M
+    Acervo Inteligente                   :2026-08, 2M
+    ACE — Técnicas Avançadas             :2026-09, 1M
+    Otimização Performance               :2026-10, 2M
+
+    section Fase 3 (Escala)
+    Kubernetes Deployment                :2026-12, 2M
+    High-Availability                    :2027-02, 2M
+    Multi-tenant                         :2027-04, 3M
+
+    section Fase 4 (API Automation)
+    API Integration Layer                :2027-07, 3M
+    Auto-scaling                         :2027-10, 2M
+    AI Montadora                         :2027-12, 3M
+```
+
+---
+
+## 1.9 Conclusão Técnica v2.0
+
+Esta arquitetura representa a evolução do sistema ClipFusion com resolução de todos os problemas críticos identificados na v1:
+
+**Problemas críticos resolvidos:**
+- ✅ Anti-Copyright Engine com 13 técnicas (8 vídeo + 5 áudio) + metadata randomization + upload scheduling
+- ✅ MoviePy substituído por FFmpeg direto como compositor (3x mais rápido, 60% menos RAM)
+- ✅ Intel VA-API habilitado (i5-6200U + Intel HD 520 nativamente suportado)
+- ✅ File Watcher com inotify real + wait_for_ready (fim do polling de 30s)
+- ✅ NLP Singleton thread-safe (modelos carregados uma única vez)
+- ✅ Health checks em todos os containers
+- ✅ Redis com persistência e evição corretamente configurados
+- ✅ Celery Workers separados com concurrency=2
+- ✅ Correlation ID (project_id) em todo o stack de observabilidade
+- ✅ CRF adaptativo por plataforma (era fixo em 23)
+- ✅ Retry logic com backoff exponencial no File Watcher
+
+**Capacidades novas v2.0:**
+- Anti-Pattern Upload Scheduler — simula comportamento humano natural por plataforma
+- Relatório ACE por projeto — rastreabilidade completa de transformações aplicadas
+- Suporte a 5 plataformas de saída (era 3): TikTok, YouTube, Instagram Reels, Instagram Feed, Kwai
+- schema_version no config.yaml — controle de versão de estrutura de projetos
+- Métricas ACE no Prometheus — monitoramento de transformações aplicadas
+
+O sistema está dimensionado para o hardware atual (i5-6200U, 8GB RAM, Intel HD 520, sem NVIDIA) e mantém caminho claro para escalar via containers sem re-arquitetura.
+
+---
+
+*DOCUMENTO v2.0 — Março 2026*
+*Baseado na Visão Arquitetural Evoluída Original (Opção 2)*
+*Próxima Revisão: Após conclusão do MVP v2.0*
